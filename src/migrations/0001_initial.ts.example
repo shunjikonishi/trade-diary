@@ -1,0 +1,28 @@
+import { Kysely, sql } from 'kysely'
+
+/**
+ * 初期マイグレーションのサンプル
+ * このファイルは参考用です。実際のマイグレーションを作成する場合は削除してください。
+ */
+export async function up(db: Kysely<any>): Promise<void> {
+  // テーブル作成の例
+  // await db.schema
+  //   .createTable('trades')
+  //   .addColumn('id', 'serial', (col) => col.primaryKey())
+  //   .addColumn('symbol', 'varchar(10)', (col) => col.notNull())
+  //   .addColumn('entry_price', 'decimal(10, 2)', (col) => col.notNull())
+  //   .addColumn('exit_price', 'decimal(10, 2)')
+  //   .addColumn('quantity', 'integer', (col) => col.notNull())
+  //   .addColumn('entry_time', 'timestamp', (col) => col.notNull())
+  //   .addColumn('exit_time', 'timestamp')
+  //   .addColumn('profit_loss', 'decimal(10, 2)')
+  //   .addColumn('notes', 'text')
+  //   .addColumn('created_at', 'timestamp', (col) => col.defaultTo(sql`now()`).notNull())
+  //   .execute()
+}
+
+export async function down(db: Kysely<any>): Promise<void> {
+  // ロールバック処理
+  // await db.schema.dropTable('trades').execute()
+}
+
