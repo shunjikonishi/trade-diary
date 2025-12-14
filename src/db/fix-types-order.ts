@@ -54,6 +54,9 @@ async function fixTypesOrder() {
         .split('_')
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join('')
+      if (interfaceName === 'KyselyMigration' || interfaceName === 'KyselyMigrationLock') {
+        continue
+      }
 
       // インターフェース定義を抽出
       const interfaceRegex = new RegExp(
