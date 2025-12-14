@@ -21,7 +21,7 @@
     "migrate": "tsx src/db/migrate.ts",
     "migrate:down": "tsx src/db/migrate-down.ts",
     "migrate:create": "tsx src/db/create-migration.ts",
-    "db:generate-types": "kysely-codegen"
+    "db:generate-types": "bash -c 'DATABASE_URL=\"postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@${POSTGRES_HOST:-localhost}:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-trade_diary}\" kysely-codegen' && tsx src/db/fix-types-order.ts"
   },
   "dependencies": {
     "kysely": "^0.28.8",
