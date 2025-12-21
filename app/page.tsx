@@ -19,7 +19,7 @@ export default function Home() {
   }, [])
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <main style={{ padding: '2rem', width: '100%' }}>
       <h1 style={{ marginBottom: '1rem' }}>Trade Diary</h1>
       <p style={{ marginBottom: '1rem' }}>デイトレードの実績や反省点を記録するアプリケーション</p>
       <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
