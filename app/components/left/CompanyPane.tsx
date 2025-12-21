@@ -1,15 +1,53 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { MonitorStatus, MonitorStatusLabel, type Company } from '@/src/models/Company'
 
 export default function CompanyPane() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    monitor_status: 0,
+    monitor_status: MonitorStatus.None,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  // 企業一覧を取得
+  const fetchCompanies = async () => {
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/companies')
+      const result = await response.json()
+
+      if (!response.ok) {
+        console.error('Error fetching companies:', result.error)
+        return
+      }
+
+      // 監視ステータスでソート（優先監視 > 監視 > 未監視）
+      const sortedCompanies = (result.data || []).sort((a: Company, b: Company) => {
+        // 監視ステータスで降順ソート（High=2 > Normal=1 > None=0）
+        if (b.monitor_status !== a.monitor_status) {
+          return b.monitor_status - a.monitor_status
+        }
+        // 同じステータスの場合は作成日時の降順
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      })
+
+      setCompanies(sortedCompanies)
+    } catch (error) {
+      console.error('Error fetching companies:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // コンポーネントマウント時に企業一覧を取得
+  useEffect(() => {
+    fetchCompanies()
+  }, [])
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -17,7 +55,7 @@ export default function CompanyPane() {
 
   const handleCloseModal = () => {
     setIsModalOpen(false)
-    setFormData({ name: '', code: '', monitor_status: 0 })
+    setFormData({ name: '', code: '', monitor_status: MonitorStatus.None })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,9 +78,8 @@ export default function CompanyPane() {
         return
       }
 
-      alert('企業を追加しました')
       handleCloseModal()
-      // TODO: 企業一覧を再読み込み
+      fetchCompanies() // 企業一覧を再読み込み
     } catch (error) {
       console.error('Error creating company:', error)
       alert('エラーが発生しました')
@@ -51,11 +88,11 @@ export default function CompanyPane() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'monitor_status' ? parseInt(value) || 0 : value,
+      [name]: name === 'monitor_status' ? parseInt(value) || MonitorStatus.None : value,
     }))
   }
 
@@ -80,7 +117,104 @@ export default function CompanyPane() {
         </button>
       </div>
 
-      <p>企業一覧がここに表示されます</p>
+      {/* 企業一覧テーブル */}
+      {isLoading ? (
+        <p>読み込み中...</p>
+      ) : companies.length === 0 ? (
+        <p>企業が登録されていません</p>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: '0.875rem',
+            }}
+          >
+            <thead>
+              <tr style={{ backgroundColor: '#f3f4f6', borderBottom: '2px solid #e5e7eb' }}>
+                <th
+                  style={{
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}
+                >
+                  ID
+                </th>
+                <th
+                  style={{
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}
+                >
+                  企業名
+                </th>
+                <th
+                  style={{
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}
+                >
+                  企業コード
+                </th>
+                <th
+                  style={{
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}
+                >
+                  監視ステータス
+                </th>
+                <th
+                  style={{
+                    padding: '0.75rem',
+                    textAlign: 'left',
+                    fontWeight: '600',
+                    color: '#374151',
+                  }}
+                >
+                  作成日時
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {companies.map((company) => (
+                <tr
+                  key={company.id}
+                  style={{
+                    borderBottom: '1px solid #e5e7eb',
+                    transition: 'background-color 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f9fafb'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                  }}
+                >
+                  <td style={{ padding: '0.75rem', color: '#6b7280' }}>{company.id}</td>
+                  <td style={{ padding: '0.75rem', color: '#111827' }}>{company.name}</td>
+                  <td style={{ padding: '0.75rem', color: '#111827' }}>{company.code}</td>
+                  <td style={{ padding: '0.75rem', color: '#111827' }}>
+                    {MonitorStatusLabel[company.monitor_status]}
+                  </td>
+                  <td style={{ padding: '0.75rem', color: '#6b7280' }}>
+                    {new Date(company.created_at).toLocaleString('ja-JP')}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* モーダルダイアログ */}
       {isModalOpen && (
@@ -179,15 +313,13 @@ export default function CompanyPane() {
                     fontSize: '0.875rem',
                   }}
                 >
-                  モニターステータス <span style={{ color: 'red' }}>*</span>
+                  監視ステータス <span style={{ color: 'red' }}>*</span>
                 </label>
-                <input
-                  type="number"
+                <select
                   name="monitor_status"
                   value={formData.monitor_status}
                   onChange={handleChange}
                   required
-                  min="0"
                   style={{
                     width: '100%',
                     padding: '0.5rem',
@@ -195,8 +327,18 @@ export default function CompanyPane() {
                     borderRadius: '4px',
                     fontSize: '0.875rem',
                     boxSizing: 'border-box',
+                    backgroundColor: '#ffffff',
+                    cursor: 'pointer',
                   }}
-                />
+                >
+                  {Object.values(MonitorStatus)
+                    .filter((value) => typeof value === 'number')
+                    .map((status) => (
+                      <option key={status} value={status}>
+                        {MonitorStatusLabel[status as MonitorStatus]}
+                      </option>
+                    ))}
+                </select>
               </div>
 
               <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
