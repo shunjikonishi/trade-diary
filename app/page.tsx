@@ -1,30 +1,21 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Panel, Group, Separator } from 'react-resizable-panels'
+import LeftPane from './components/LeftPane'
+import RightPane from './components/RightPane'
 
 export default function Home() {
-  const [message, setMessage] = useState<string>('読み込み中...')
-
-  useEffect(() => {
-    // APIエンドポイントを呼び出し
-    fetch('/api/health')
-      .then((res) => res.json())
-      .then((data) => {
-        setMessage(data.message || 'API接続成功')
-      })
-      .catch((err) => {
-        setMessage('API接続エラー')
-        console.error(err)
-      })
-  }, [])
-
   return (
-    <main style={{ padding: '2rem', width: '100%' }}>
-      <h1 style={{ marginBottom: '1rem' }}>Trade Diary</h1>
-      <p style={{ marginBottom: '1rem' }}>デイトレードの実績や反省点を記録するアプリケーション</p>
-      <div style={{ padding: '1rem', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-        <p>APIステータス: {message}</p>
-      </div>
+    <main style={{ width: '100%', height: '100vh', margin: 0, padding: 0 }}>
+      <Group orientation="horizontal" style={{ width: '100%', height: '100%' }}>
+        <Panel defaultSize={50} minSize={20}>
+          <LeftPane />
+        </Panel>
+        <Separator style={{ width: '4px', backgroundColor: '#e0e0e0', cursor: 'col-resize' }} />
+        <Panel defaultSize={50} minSize={20}>
+          <RightPane />
+        </Panel>
+      </Group>
     </main>
   )
 }
